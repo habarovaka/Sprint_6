@@ -1,40 +1,35 @@
-from selenium.webdriver.common.by import By
+import allure
 import pytest
 from pages.main_page import MainPage
 from pages.order_page import OrderPage
-from selenium.webdriver.common.by import By  # 👈 ВОТ ЭТОТ ИМПОРТ ИСПРАВИТ ОШИБКУ
-from selenium.webdriver.common.keys import Keys  # Нужен для работы Keys.ENTER
-from pages.base_page import BasePage
-from locators.order_locators import OrderLocators  # Проверьте, что путь к локаторам у вас такой
 
-
-class OrderPage(BasePage):
-    # ... ваши остальные методы (__init__, fill_first_form и т.д.) ...
-
-    def fill_second_form(self, date, period, color, comment):
-        # 1. Заполняем дату и закрываем календарь нажатием Enter
-        date_input = self.find_element(OrderLocators.INPUT_DATE)
-        date_input.send_keys(date)
-        date_input.send_keys(Keys.ENTER)
-
-        # 2. Кликаем по выпадающему списку "Срок аренды"
-        self.find_element(OrderLocators.DROPDOWN_PERIOD).click()
-
-        # 3. Кликаем по конкретному варианту срока (например, "сутки" или "двое суток")
-        period_option_locator = OrderLocators.get_period_option_locator(period)
-        self.find_element(period_option_locator).click()
-
-        # 4. Выбираем цвет самоката (теперь By.ID сработает без ошибок!)
-        color_locator = (By.ID, color)
-        self.find_element(color_locator).click()
-
-        # 5. Пишем комментарий
-        if comment:
-            comment_input = self.find_element((By.XPATH, "//input[@placeholder='Комментарий для курьера']"))
-            comment_input.send_keys(comment)
-
-        # 6. Кликаем на кнопку "Заказать" внизу формы
-        self.find_element(OrderLocators.BUTTON_ORDER_FINAL).click()
-
-        # 7. Кликаем на кнопку "Да" в окне подтверждения
-        self.find_element(OrderLocators.BUTTON_CONFIRM).click()
+class TestOrder:
+    @allure.title("Проверка успешного оформления заказа самоката")
+    @allure.description(
+        "Позитивный сценарий: проверяем весь цикл оформления заказа через две разные кнопки "
+        "(в хедере и внизу страницы). Заполняем обе формы валидными данными и проверяем "
+        "появление модального окна об успешном создании заказа."
+    )
+    @pytest.mark.parametrize(
+        "button_type, name, surname, address, metro, phone, date, period, color, comment",
+        [
+            # Тест-кейс 1: заказ через верхнюю кнопку, черный самокат
+            ("top", "Иван", "Иванов", "ул. Ленина, д. 10", "Черкизовская", "79991112233", "15.06.2026", "сутки",
+             "black", "Позвонить за час"),
+            # Тест-кейс 2: заказ через нижнюю кнопку, серый самокат
+            ("bottom", "Анна", "Петрова", "Сиреневый бульвар, д. 5", "Сокольники", "89994445566", "16.06.2026",
+             "двое суток", "grey", "")
+        ]
+    )
+    def test_order_flow_success(self, driver, button_type, name, surname, address, metro, phone, date, period, color,
+                                comment):
+        main_page = MainPage(driver)
+        main_page.accept_cookies()
+        if button_type == "top":
+            main_page.click_top_order_button()
+        else:
+            main_page.click_bottom_order_button()
+        order_page = OrderPage(driver)
+        order_page.fill_first_form(name, surname, address, metro, phone)
+        order_page.fill_second_form(date, period, color, comment)
+        assert order_page.is_success_modal_displayed(), "Модальное окно успешного заказа не отобразилось!"
