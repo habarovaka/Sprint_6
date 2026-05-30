@@ -18,7 +18,7 @@ class OrderLocators:
     INPUT_COMMENT = (By.XPATH, "//input[@placeholder='Комментарий для курьера']")
     BUTTON_ORDER = (By.XPATH, "//div[contains(@class, 'Order_Buttons')]/button[text()='Заказать']")
     BUTTON_CONFIRM = (By.XPATH, "//button[text()='Да']")
-    MODAL_SUCCESS = (By.XPATH, "//div[contains(@class, 'Order_ModalHeader') and contains(text(), 'Заказ оформлен')]")
+    MODAL_SUCCESS = (By.XPATH, "//*[contains(text(), 'Заказ оформлен')]")
 
     @staticmethod
     def get_period_option_locator(period_text):

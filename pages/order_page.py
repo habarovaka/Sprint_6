@@ -15,6 +15,7 @@ class OrderPage(BasePage):
         self.click_element(metro_locator)
         self.find_element(OrderLocators.INPUT_PHONE).send_keys(phone)
         self.click_element(OrderLocators.BUTTON_NEXT)
+
     @allure.step("Заполнение второй формы 'Про аренду'")
     def fill_second_form(self, date, period, color, comment):
         date_input = self.find_element(OrderLocators.INPUT_DATE)
