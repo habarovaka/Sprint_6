@@ -53,3 +53,14 @@ class BasePage:
     @allure.step("Получение текста из видимого элемента")
     def get_text_from_visible_element(self, locator, time=10):
         return self.wait_for_visibility(locator, time).text
+
+    @allure.step("Получение текущего URL")
+    def get_current_url(self):
+        return self.driver.current_url
+
+    @allure.step("Ожидание изменения URL")
+    def wait_for_url_contains(self, url, time=10):
+        return WebDriverWait(self.driver, time).until(
+            EC.url_contains(url),
+            message=f"URL не содержит {url}"
+        )
